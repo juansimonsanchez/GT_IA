@@ -1,0 +1,68 @@
+services:
+  # MODELO MULTIMODAL: GEMMA 4 E4B INSTRUCT (Visión + Texto + Razonamiento)
+  vllm-gemma-vision:
+    image: vllm/vllm-openai:latest
+    container_name: vllm-gemma4-backend
+    restart: unless-stopped
+    ipc: host
+    volumes:
+      - /srv/ai-models/huggingface:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+      - HF_TOKEN=${HF_TOKEN}
+    command: [
+      "google/gemma-4-e4b-it",
+      "--port", "8000",
+      "--quantization", "fp8",
+      "--dtype", "half",
+      "--gpu-memory-utilization", "0.93",
+      "--max-model-len", "8192",
+      "--trust-remote-code",
+      "--limit-mm-per-prompt", "{\"image\":2,\"video\":0,\"audio\":0}",
+      "--enable-auto-tool-choice",     # AÑADIDO: Permite el modo auto de Open WebUI
+      "--tool-call-parser", "hermes",  # AÑADIDO: Parser compatible que suele funcionar bien como fallback
+      "--enable-prefix-caching",
+      "--uvicorn-log-level", "info"
+    ]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - ai-network
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    volumes:
+      - openwebui_storage:/app/backend/data
+    environment:
+      - OPENAI_API_BASE_URL=http://vllm-gemma-vision:8000/v1
+      - OPENAI_API_KEY=none
+      - WEBUI_AUTH=True
+      - ENABLE_SIGNUP=True
+      - SHOW_GENERATION_DETAILS=True
+    depends_on:
+      - vllm-gemma-vision
+    networks:
+      - ai-network
+
+networks:
+  ai-network:
+    driver: bridge
+
+volumes:
+  openwebui_storage:

@@ -1,0 +1,53 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-backend
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      # -1 = El modelo permanece indefinidamente en VRAM tras usarse
+      - OLLAMA_KEEP_ALIVE=-1
+      # Permite varias peticiones simultáneas sobre el modelo residente
+      - OLLAMA_NUM_PARALLEL=4
+      # Evita que convivan dos modelos simultáneos agotando la GPU
+      - OLLAMA_MAX_LOADED_MODELS=1
+    volumes:
+      - /srv/ai-models/ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - ai-network
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    volumes:
+      - openwebui_storage:/app/backend/data
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_AUTH=True
+      - ENABLE_SIGNUP=True
+      - DEFAULT_USER_ROLE=user
+      - SHOW_ADMIN_DETAILS=False
+      # Muestra la velocidad y tiempos de inferencia en cada mensaje
+      - SHOW_GENERATION_DETAILS=True
+    depends_on:
+      - ollama
+    networks:
+      - ai-network
+
+networks:
+  ai-network:
+    driver: bridge
+
+volumes:
+  openwebui_storage:

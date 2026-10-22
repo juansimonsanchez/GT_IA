@@ -1,0 +1,56 @@
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: vllm-backend
+    restart: unless-stopped
+    volumes:
+      - /srv/ai-models/huggingface:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      - "8000:8000"
+    environment:
+      # Ayuda a evitar la fragmentación de memoria reportada en el log
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+    command: >
+      --model Qwen/Qwen2.5-7B-Instruct-AWQ
+      --quantization awq
+      --port 8000
+      --gpu-memory-utilization 0.80
+      --max-model-len 8192
+      --trust-remote-code
+      --enable-auto-tool-choice
+      --tool-call-parser hermes
+    networks:
+      - ai-network
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    volumes:
+      - openwebui_storage:/app/backend/data
+    environment:
+      - OPENAI_API_BASE_URL=http://vllm:8000/v1
+      - OPENAI_API_KEY=none
+      - WEBUI_AUTH=True
+      - ENABLE_SIGNUP=True
+      - SHOW_GENERATION_DETAILS=True
+    depends_on:
+      - vllm
+    networks:
+      - ai-network
+
+networks:
+  ai-network:
+    driver: bridge
+
+volumes:
+  openwebui_storage:
