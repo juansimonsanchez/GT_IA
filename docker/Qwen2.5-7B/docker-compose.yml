@@ -17,7 +17,7 @@ services:
     environment:
       # Ayuda a evitar la fragmentación de memoria reportada en el log
       - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-      - HF_TOKEN= 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
+      - HF_TOKEN= xxxxxx # Para autentificarnos y descarfa el modelo si fuera necesario
     command: [
       "Qwen/Qwen2.5-VL-7B-Instruct-AWQ",
       "--port", "8000",
