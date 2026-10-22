@@ -32,9 +32,11 @@ Desplegar, securizar y documentar una infraestructura de **Inteligencia Artifici
 
 ```
 ├── docker/
-│   ├── ollama/                  # Docker compose para levantar OpenWebUI + Ollama (para la prueba de motores)
-│   └── vLLM/                    # Docker compose para levantar OpenWebUI + vLLM
-├── benchmarks/
+│   ├── ollama/                  # Docker compose para levantar OpenWebUI + Ollama (prueba de motores)
+│   └── vLLM/                    # Docker compose para levantar OpenWebUI + vLLM (prueba de motores)
+│   └── Gemma4-e4-it/            # Docker compose para levantar OpenWebUI + vLLM + Gemma4 (pruebas de modelos)
+│   └── Qwen2.5-7B/              # Docker compose para levantar OpenWebUI + vLLM + Gemma4 (pruebas de modelos)
+├── benchmark
 │   ├── benchmark.sh             # Script de estrés para medir latencia (TTFT) y tokens/s
 │   └── resultados/              # Logs comparativos de rendimiento y consumo de VRAM
 ├── docs/
@@ -42,11 +44,11 @@ Desplegar, securizar y documentar una infraestructura de **Inteligencia Artifici
 │   ├── securizacion_backups.md  # Políticas de acceso, red local, firewall y copias
 │   └── catalogo_modelos.md      # Evaluación crítica (precisión en Bash/SQL/código vs alucinaciones)
 ├── practicas_aula/
-│   ├── asir_smr/                # Monitorización (nvidia-smi), logs, cuellos de botella y Docker
-│   ├── dam_daw/                 # Integración de API local en Python/Java/PHP y consultas SQL
-│   └── ciberseguridad/          # Auditoría, prompts estructurados y análisis de seguridad
+│   ├── asir_smr/                # Por ejemplo: Monitorización (nvidia-smi), logs, cuellos de botella y Docker
+│   ├── dam_daw/                 # Por ejemplo: Integración de API local en Python/Java/PHP y consultas SQL
+│   └── ciberseguridad/          # Por ejemplo: Auditoría, prompts estructurados y análisis de seguridad
 └── prompts/                     # Banco de prompts técnicos y pruebas para RAG
-
+├── README.md                    # Este documento
 ```
 ## Aplicación Didáctica en Ciclos Formativos
 
