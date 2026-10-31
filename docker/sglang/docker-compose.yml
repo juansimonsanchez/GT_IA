@@ -1,0 +1,87 @@
+services:
+  # ==========================================================================
+  # Motor de inferencia SGLang (Alternativa de alto rendimiento a vLLM)
+  # Destaca por RadixAttention (reutilización automática de caché KV / prefijos)
+  # ==========================================================================
+  sglang:
+    image: lmsysorg/sglang:latest
+    container_name: sglang-backend
+    restart: unless-stopped
+    # Permite compartir memoria entre procesos del host y el contenedor (crítico para PyTorch/CUDA)
+    ipc: host
+    volumes:
+      # Reutiliza la misma carpeta local de modelos de Hugging Face que vLLM
+      - /srv/ai-models/huggingface:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            # Asignación de 1 GPU NVIDIA al contenedor mediante nvidia-container-toolkit
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      # Puerto por defecto de la API de SGLang (compatible con el estándar OpenAI)
+      - "30000:30000"
+    env_file:
+      # Carga las variables comunes (como HF_TOKEN) desde el archivo .env en la raíz del proyecto
+      - path: ../../.env
+        required: false
+    environment:
+      # Evita la fragmentación de VRAM reservando bloques dinámicos en CUDA
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+    # Uso de lista en command para permitir documentar cada argumento individualmente
+    command: [
+      "python3", "-m", "sglang.launch_server",
+      "--model-path", "Qwen/Qwen2.5-7B-Instruct-AWQ", # Modelo a cargar (o ruta local en caché)
+      "--quantization", "awq",                        # Cuantización a 4 bits (opcional, quitar si el modelo es FP16/BF16)
+      "--host", "0.0.0.0",                            # Escuchar en todas las interfaces de red del contenedor
+      "--port", "30000",                              # Puerto interno del servidor de inferencia
+      "--mem-fraction-static", "0.85",                # Fracción de VRAM para pesos + caché KV (equivalente a --gpu-memory-utilization en vLLM)
+      "--context-length", "8192",                     # Longitud máxima de contexto en tokens (equivalente a --max-model-len)
+      "--trust-remote-code",                          # Permite ejecutar código personalizado del repositorio del modelo
+      "--tool-call-parser", "qwen25"                  # Habilita el soporte nativo de herramientas (Tool Calling / Function Calling)
+    ]
+    logging:
+      driver: "json-file"
+      options:
+        # Limita el tamaño de los logs para evitar llenar el disco del servidor
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - ai-network
+
+  # ==========================================================================
+  # Interfaz web para usuarios (Open WebUI)
+  # ==========================================================================
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui-sglang
+    restart: unless-stopped
+    ports:
+      # Expuesto en el puerto 3001 del host para no colisionar con otras instancias en el 3000
+      - "3001:8080"
+    volumes:
+      # Volumen persistente para usuarios, historiales de chat y documentos RAG
+      - openwebui_sglang_storage:/app/backend/data
+    environment:
+      # Conecta Open WebUI al backend de SGLang usando su endpoint compatible con OpenAI
+      - OPENAI_API_BASE_URL=http://sglang:30000/v1
+      # SGLang no requiere API Key por defecto, pero el cliente exige un valor no vacío
+      - OPENAI_API_KEY=none
+      # Activa el sistema de autenticación y permite el registro de nuevos usuarios
+      - WEBUI_AUTH=True
+      - ENABLE_SIGNUP=True
+      # Muestra estadísticas detalladas (tokens/s, latencia TTFT) al final de cada respuesta
+      - SHOW_GENERATION_DETAILS=True
+    depends_on:
+      - sglang
+    networks:
+      - ai-network
+
+networks:
+  ai-network:
+    driver: bridge
+
+volumes:
+  openwebui_sglang_storage:

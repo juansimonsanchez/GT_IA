@@ -16,9 +16,12 @@ services:
               capabilities: [gpu]
     ports:
       - "8000:8000"
+    env_file:
+      # Carga las variables comunes (como HF_TOKEN) desde el archivo .env en la raíz del proyecto
+      - path: ../../.env
+        required: false
     environment:
       - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-      - HF_TOKEN=${HF_TOKEN}
     command: [
       "google/gemma-4-e4b-it",
       "--port", "8000",
