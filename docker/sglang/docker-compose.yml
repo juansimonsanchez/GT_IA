@@ -24,7 +24,9 @@ services:
       # Puerto por defecto de la API de SGLang (compatible con el estándar OpenAI)
       - "30000:30000"
     env_file:
-      # Carga las variables comunes (como HF_TOKEN) desde el archivo .env en la raíz del proyecto
+      # Carga el archivo .env tanto si las carpetas están directamente en ~/ como dentro de docker/
+      - path: ../.env
+        required: false
       - path: ../../.env
         required: false
     environment:
@@ -40,7 +42,8 @@ services:
       "--mem-fraction-static", "0.85",                # Fracción de VRAM para pesos + caché KV (equivalente a --gpu-memory-utilization en vLLM)
       "--context-length", "8192",                     # Longitud máxima de contexto en tokens (equivalente a --max-model-len)
       "--trust-remote-code",                          # Permite ejecutar código personalizado del repositorio del modelo
-      "--tool-call-parser", "qwen25"                  # Habilita el soporte nativo de herramientas (Tool Calling / Function Calling)
+      "--tool-call-parser", "qwen25",                 # Habilita el soporte nativo de herramientas (Tool Calling / Function Calling)
+      "--disable-cuda-graph"                          # Evita bloqueos al compilar CUDA graphs en GPU Blackwell (RTX 5070 Ti)
     ]
     logging:
       driver: "json-file"

@@ -17,7 +17,9 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      # Carga las variables comunes (como HF_TOKEN) desde el archivo .env en la raíz del proyecto
+      # Carga el archivo .env tanto si las carpetas están directamente en ~/ como dentro de docker/
+      - path: ../.env
+        required: false
       - path: ../../.env
         required: false
     environment:

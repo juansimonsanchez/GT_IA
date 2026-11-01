@@ -18,7 +18,7 @@ Desplegar, securizar y documentar una infraestructura de **Inteligencia Artifici
 
 * **SO Host:** Linux (Ubuntu Server / Debian) con drivers NVIDIA + CUDA 12.6.
 
-* **Motores de Inferencia:** `vLLM`, `Ollama` y `llama.cpp`.
+* **Motores de Inferencia:** `vLLM`, `SGLang`, `Ollama` y `llama.cpp`.
 
 * **Orquestación:** Docker y Docker Compose (`nvidia-container-toolkit`).
 
@@ -32,10 +32,11 @@ Desplegar, securizar y documentar una infraestructura de **Inteligencia Artifici
 
 ```
 ├── docker/
-│   ├── ollama/                  # Docker compose para levantar OpenWebUI + Ollama (prueba de motores)
-│   └── vLLM/                    # Docker compose para levantar OpenWebUI + vLLM (prueba de motores)
-│   └── Gemma4-e4-it/            # Docker compose para levantar OpenWebUI + vLLM + Gemma4 (pruebas de modelos)
-│   └── Qwen2.5-7B/              # Docker compose para levantar OpenWebUI + vLLM + Gemma4 (pruebas de modelos)
+│   ├── Ollama/                  # Docker compose para levantar OpenWebUI + Ollama (prueba de motores)
+│   ├── vLLM/                    # Docker compose para levantar OpenWebUI + vLLM (prueba de motores)
+│   ├── sglang/                  # Docker compose para levantar OpenWebUI + SGLang (prueba de motores)
+│   ├── Gemma4-e4b-it/           # Docker compose para levantar OpenWebUI + vLLM + Gemma4 (pruebas de modelos)
+│   └── Qwen2.5-7B/              # Docker compose para levantar OpenWebUI + vLLM + Qwen2.5 (pruebas de modelos)
 ├── benchmark
 │   ├── benchmark.sh             # Script de estrés para medir latencia (TTFT) y tokens/s
 │   └── resultados/              # Logs comparativos de rendimiento y consumo de VRAM

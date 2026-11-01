@@ -3,6 +3,7 @@ services:
     image: vllm/vllm-openai:latest
     container_name: vllm-backend
     restart: unless-stopped
+    ipc: host
     volumes:
       - /srv/ai-models/huggingface:/root/.cache/huggingface
     deploy:
@@ -15,7 +16,9 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      # Carga las variables comunes (como HF_TOKEN) desde el archivo .env en la raíz del proyecto
+      # Carga el archivo .env tanto si las carpetas están directamente en ~/ como dentro de docker/
+      - path: ../.env
+        required: false
       - path: ../../.env
         required: false
     environment:
@@ -30,6 +33,7 @@ services:
       --trust-remote-code
       --enable-auto-tool-choice
       --tool-call-parser hermes
+      --enforce-eager
     networks:
       - ai-network
 

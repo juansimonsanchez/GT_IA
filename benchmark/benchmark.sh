@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # Script de benchmarking universal para LLMs (API compatible con OpenAI)
-# Compatible con: vLLM, Ollama, LM Studio, TGI, Aphrodite, OpenAI, Groq, DeepSeek, etc.
+# Compatible con: vLLM, SGLang, Ollama, LM Studio, TGI, Aphrodite, OpenAI, Groq, DeepSeek, etc.
 # Soporta: Modelos Instruct estándar y modelos de razonamiento (DeepSeek-R1, etc.)
 #
 # Uso:
 #   ./benchmark.sh <URL_BASE> <MODEL_NAME> [API_KEY]
 # Ejemplos:
-#   ./benchmark.sh http://localhost:8000/v1 Qwen/Qwen2.5-7B-Instruct-AWQ
-#   ./benchmark.sh http://localhost:11434/v1 deepseek-r1:7b
-#   ./benchmark.sh https://api.openai.com/v1 gpt-4o-mini sk-tu-clave
+#   ./benchmark.sh http://localhost:8000/v1 Qwen/Qwen2.5-7B-Instruct-AWQ    # vLLM
+#   ./benchmark.sh http://localhost:30000/v1 Qwen/Qwen2.5-7B-Instruct-AWQ   # SGLang
+#   ./benchmark.sh http://localhost:11434/v1 qwen2.5:7b                     # Ollama
 # ==============================================================================
 
 set -euo pipefail
