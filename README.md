@@ -18,7 +18,7 @@ Desplegar, securizar y documentar una infraestructura de **Inteligencia Artifici
 
 * **SO Host:** Linux (Ubuntu Server / Debian) con drivers NVIDIA + CUDA 12.6.
 
-* **Motores de Inferencia:** `vLLM`, `SGLang`, `Ollama` y `llama.cpp`.
+* **Motores de Inferencia:** `vLLM`, `SGLang`, `Ollama` .
 
 * **Orquestación:** Docker y Docker Compose (`nvidia-container-toolkit`).
 
@@ -26,7 +26,7 @@ Desplegar, securizar y documentar una infraestructura de **Inteligencia Artifici
 
 * **Modelos Evaluados:** Familias abiertas y multimodales  en versiones densas y cuantizadas (AWQ 4-bit, GGUF).
 
-* **APIs:** Interfaz compatible con OpenAI y Hugging Face p.
+* **APIs:** Interfaz compatible con OpenAI y Hugging Face.
 
 ## Estructura del Repositorio
 
@@ -51,6 +51,9 @@ Desplegar, securizar y documentar una infraestructura de **Inteligencia Artifici
 └── prompts/                     # Banco de prompts técnicos y pruebas para RAG
 ├── README.md                    # Este documento
 ```
+
+Para la prueba de modelos, se recomendable utilizar OpenWebUI. Desde su interfaz es fácil descargar un modelo para pruebas. Serán modelos densos, pero luego seguramente utilizaremos una versión cuantificada.
+
 ## Aplicación Didáctica en Ciclos Formativos
 
 | Ciclo | Enfoque Principal en el Aula | 
