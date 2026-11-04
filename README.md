@@ -32,12 +32,13 @@ Desplegar, securizar y documentar una infraestructura de **Inteligencia Artifici
 
 ```
 ├── docker/
-│   ├── Ollama/                  # Docker compose para levantar OpenWebUI + Ollama (prueba de motores)
+│   ├── README.md                # Guía para levantar, parar y probar los distintos motores y modelos
+│   ├── Ollama/                  # Docker compose para levantar OpenWebUI + Ollama (prueba de motores y modelos)
 │   ├── vLLM/                    # Docker compose para levantar OpenWebUI + vLLM (prueba de motores)
 │   ├── sglang/                  # Docker compose para levantar OpenWebUI + SGLang (prueba de motores)
 │   ├── Gemma4-e4b-it/           # Docker compose para levantar OpenWebUI + vLLM + Gemma4 (pruebas de modelos)
 │   └── Qwen2.5-7B/              # Docker compose para levantar OpenWebUI + vLLM + Qwen2.5 (pruebas de modelos)
-├── benchmark
+├── benchmark/
 │   ├── benchmark.sh             # Script de estrés para medir latencia (TTFT) y tokens/s
 │   └── resultados/              # Logs comparativos de rendimiento y consumo de VRAM
 ├── docs/
@@ -48,9 +49,12 @@ Desplegar, securizar y documentar una infraestructura de **Inteligencia Artifici
 │   ├── asir_smr/                # Por ejemplo: Monitorización (nvidia-smi), logs, cuellos de botella y Docker
 │   ├── dam_daw/                 # Por ejemplo: Integración de API local en Python/Java/PHP y consultas SQL
 │   └── ciberseguridad/          # Por ejemplo: Auditoría, prompts estructurados y análisis de seguridad
-└── prompts/                     # Banco de prompts técnicos y pruebas para RAG
-├── README.md                    # Este documento
+├── prompts/                     # Banco de prompts técnicos y pruebas para RAG
+├── .env.example                 # Plantilla de variables de entorno comunes (ej. HF_TOKEN)
+└── README.md                    # Este documento
 ```
+
+> Para instrucciones detalladas sobre cómo levantar, detener y evaluar el rendimiento de cada motor de inferencia (`Ollama`, `vLLM`, `SGLang`), consulta la [Guía de Despliegue en `docker/README.md`](docker/README.md).
 
 Para la prueba de modelos, se recomendable utilizar OpenWebUI. Desde su interfaz es fácil descargar un modelo para pruebas. Serán modelos densos, pero luego seguramente utilizaremos una versión cuantificada.
 

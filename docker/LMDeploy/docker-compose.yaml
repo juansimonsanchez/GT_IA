@@ -1,0 +1,99 @@
+services:
+  # ==========================================================================
+  # Motor de inferencia LMDeploy (OpenMMLab)
+  # Destaca por su motor TurboMind en C++ y su altísimo rendimiento en AWQ (4-bit)
+  # ==========================================================================
+  lmdeploy:
+    # Nota para arquitectura Blackwell (Serie RTX 50): si :latest da error de kernel CUDA (sm_120),
+    # utiliza el tag compilado con CUDA 12.8+, ej: openmmlab/lmdeploy:v0.7.1-cu128
+    image: openmmlab/lmdeploy:latest
+    container_name: lmdeploy-backend
+    restart: unless-stopped
+    # Permite compartir memoria entre procesos del host y el contenedor (crítico para PyTorch/CUDA)
+    ipc: host
+    volumes:
+      # Reutiliza la misma carpeta local de modelos de Hugging Face que vLLM y SGLang
+      - /srv/ai-models/huggingface:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            # Asignación de 1 GPU NVIDIA al contenedor mediante nvidia-container-toolkit
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      # Puerto por defecto de la API de LMDeploy (compatible con el estándar OpenAI)
+      - "23333:23333"
+    env_file:
+      # Carga el archivo .env local o en directorios superiores según tu estructura de carpetas
+      - path: .env
+        required: false
+      - path: ../.env
+        required: false
+      - path: ../../.env
+        required: false
+    environment:
+      # Evita la fragmentación de VRAM reservando bloques dinámicos en CUDA
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+      # Inyecta el token de Hugging Face desde el .env cargado
+      - HF_TOKEN=${HF_TOKEN:-}
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN:-}
+    # Uso de lista en command para permitir documentar cada argumento individualmente
+    command: [
+      "lmdeploy", "serve", "api_server",
+      "Qwen/Qwen2.5-7B-Instruct-AWQ",       # Modelo a cargar desde /srv/ai-models/huggingface
+      "--server-name", "0.0.0.0",           # Escuchar en todas las interfaces de red del contenedor
+      "--server-port", "23333",             # Puerto interno del servidor de inferencia
+      "--backend", "turbomind",             # Motor en C++ optimizado (cambiar a "pytorch" si hubiera incompatibilidad en Blackwell)
+      "--model-format", "awq",              # Formato de cuantización a 4 bits (AWQ)
+      "--cache-max-entry-count", "0.85",    # Fracción de VRAM libre para caché KV (equivalente a --mem-fraction-static)
+      "--session-len", "8192",              # Longitud máxima de contexto en tokens (puedes subirlo a 16384 o 32768 en 16GB)
+      "--trust-remote-code"                 # Permite ejecutar código personalizado del repositorio del modelo
+    ]
+    logging:
+      driver: "json-file"
+      options:
+        # Limita el tamaño de los logs para evitar llenar el disco del servidor
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - ai-network
+
+  # ==========================================================================
+  # Interfaz web para usuarios (Open WebUI)
+  # ==========================================================================
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui-lmdeploy
+    restart: unless-stopped
+    ports:
+      # Expuesto en el puerto 3002 del host para no colisionar con vLLM (3000) ni SGLang (3001)
+      - "3002:8080"
+    volumes:
+      # Volumen persistente para usuarios, historiales de chat y documentos RAG
+      # (Si prefieres compartir usuarios y chats con el de SGLang, pon openwebui_sglang_storage)
+      - openwebui_lmdeploy_storage:/app/backend/data
+    environment:
+      # Conecta Open WebUI al backend de LMDeploy usando su endpoint compatible con OpenAI
+      - OPENAI_API_BASE_URL=http://lmdeploy:23333/v1
+      # LMDeploy no requiere API Key por defecto, pero el cliente exige un valor no vacío
+      - OPENAI_API_KEY=none
+      # Desactiva la búsqueda de Ollama para limpiar los logs de arranque
+      - ENABLE_OLLAMA_API=False
+      # Activa el sistema de autenticación y permite el registro de nuevos usuarios
+      - WEBUI_AUTH=True
+      - ENABLE_SIGNUP=True
+      # Muestra estadísticas detalladas (tokens/s, latencia TTFT) al final de cada respuesta
+      - SHOW_GENERATION_DETAILS=True
+    depends_on:
+      - lmdeploy
+    networks:
+      - ai-network
+
+networks:
+  ai-network:
+    driver: bridge
+
+volumes:
+  openwebui_lmdeploy_storage:
