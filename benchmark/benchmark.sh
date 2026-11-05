@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # Script de benchmarking universal para LLMs (API compatible con OpenAI)
-# Compatible con: vLLM, SGLang, Ollama, LM Studio, TGI, Aphrodite, OpenAI, Groq, DeepSeek, etc.
+# Compatible con: vLLM, SGLang, LMDeploy, Ollama, LM Studio, TGI, Aphrodite, OpenAI, Groq, DeepSeek, etc.
 # Soporta: Modelos Instruct estándar y modelos de razonamiento (DeepSeek-R1, etc.)
 #
 # Uso:
@@ -9,6 +9,7 @@
 # Ejemplos:
 #   ./benchmark.sh http://localhost:8000/v1 Qwen/Qwen2.5-7B-Instruct-AWQ    # vLLM
 #   ./benchmark.sh http://localhost:30000/v1 Qwen/Qwen2.5-7B-Instruct-AWQ   # SGLang
+#   ./benchmark.sh http://localhost:23333/v1 Qwen/Qwen2.5-7B-Instruct-AWQ   # LMDeploy (puerto por defecto 23333)
 #   ./benchmark.sh http://localhost:11434/v1 qwen2.5:7b                     # Ollama
 # ==============================================================================
 
